@@ -451,11 +451,6 @@
                     }
                     count++; 
                 }
-                // var dvCSV = document.getElementById("dvCSV");
-                // dvCSV.innerHTML = "";
-                // dvCSV.appendChild(table);
-            }
-            reader.readAsText(fileUpload.files[0]);
             heads = getHeads();
             for(var h in heads){//heads.length
               populateTree(heads[h],[])
@@ -465,6 +460,9 @@
               console.log("");
             }
             generateTree(heads[6]);
+            }
+            reader.readAsText(fileUpload.files[0]);
+            
         } else {
             alert("This browser does not support HTML5.");
         }
