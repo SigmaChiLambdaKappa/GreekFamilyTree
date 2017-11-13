@@ -26,6 +26,16 @@
     var horizontal_gap = 16
     var vertical_gap = 32
 
+	var rollFormat = {			
+		filterOutMember: ['S','D'], //Filter list for Sweethearts (Sx) and Dogs (Dx)
+		setStatus: {"Active":1,"Alumni":0,"Disassociated":2, "Transferred/ Left School":1}, //status dictionary	
+	};		
+	
+	var rollData = {
+		memberLookup: {}, //dictionary mapping roll number to member object
+		memberDict: {}, //dictionary mapping littles to bigs by roll number				  
+	};
+	
     // Draw a graph node.
     function node(lbl, x, y, sz) {
       if (!sz) sz = node_size
@@ -144,7 +154,7 @@
       // This is optional, but eliminates a minor leftward skew in appearance.
       var state = 0
       var i0 = 0
-      for (i = 0; i < n_children; i++) {
+      for (var i = 0; i < n_children; i++) {
         if (state == 0) {
           state = this.children[i].is_leaf() ? 3 : 1
         } else if (state == 1) {
@@ -166,7 +176,7 @@
       }
 
       // Adjust to center the root on its children
-      for (i = 0; i < n_children; i++)
+      for (var i = 0; i < n_children; i++)
         this.children[i].offset -= 0.5 * offset
 
       // Merge the offset extents of the children into one for this tree
@@ -205,8 +215,8 @@
 
     // Generate a random tree with given depth and minimum number of children of the root.
     // The min_children field is optional.  Use e.g. 2 to avoid trivial trees.
-    var node_label = 0
-    function random_tree(depth, min_children) {
+	var node_label = 0
+    function random_tree(depth, min_children) {	
       var n_children = depth <= 1 || Math.random() < 0.5 ? 0 : Math.round(Math.random() * 4)
       if (min_children) n_children = max(n_children, min_children)
       var children = []
@@ -224,16 +234,17 @@
         this.big = big
         this.status = status
         this.pledgeClass = pledgeClass
-      }
-    member.prototype.toString = function(){
-        console.log(''+this.roll + "\t" + this.name + "\t" + this.status + "\t" + this.pledgeClass + "\t" + this.big + "\t" + this.bigRoll)
-      }
+    }
+    
+	member.prototype.toString = function(){
+		console.log(''+this.roll + "\t" + this.name + "\t" + this.status + "\t" + this.pledgeClass + "\t" + this.big + "\t" + this.bigRoll)
+	}
 
       // Draw a graph node.
     function t_node(n, x, y, sz) {
       if (!sz) sz = node_size
       var h = sz / 2
-      var bro = memberLookup[n];
+      var bro = rollData.memberLookup[n];
       var d1 = document.getElementById('tree_space');
       d1.innerHTML += '<div class="node" style="left:' + (x - h) + 'px;top:' + (y - h) +  'px;width:' + sz + 'px;height:' + sz + 'px;line-height:' + sz + 'px;">' + bro.name + ' ' + bro.roll + '</div>';
       // document.write('<div class="node" style="left:' + (x - h) + 'px;top:' + (y - h) +
@@ -241,31 +252,33 @@
       //     'px;">' + bro.name + '</div>')
     }
 
-     function bro_node(head, child, data){
-        this.head = head
-        this.child = child
-        this.data = data
-      }
+    function bro_node(head, child, data){
+        this.head = head;
+        this.child = child;
+        this.data = data;
+    }
     bro_node.prototype.addChild = function(c){
-        this.child.push(c)
-      }
+		this.child.push(c);
+    }
     bro_node.prototype.toString = function(){
-        print(''+this.data + this.head + this.child)
-      }
+        print(''+this.data + this.head + this.child);
+	}
 
-      bro_node.prototype.is_leaf = function() { return this.child.length == 0 }
+    bro_node.prototype.is_leaf = function() { 
+		return this.child.length == 0;
+	}
 
     // Label the tree with given root (x,y) coordinates using the offset
     // information created by extent().
     bro_node.prototype.place = function(x, y) {
-      var n_children = this.child.length
-      var y_children = y + vertical_gap + node_size
-      for (var i = 0; i < n_children; i++) {
-        var child = this.child[i]
-        child.place(x + child.offset, y_children)
-      }
-      this.x = x
-      this.y = y
+		var n_children = this.child.length
+		var y_children = y + vertical_gap + node_size
+		for (var i = 0; i < n_children; i++) {
+			var child = this.child[i]
+			child.place(x + child.offset, y_children)
+		}
+		this.x = x
+		this.y = y
     }
 
     // Draw the tree after it has been labeled w ith extent() and place().
@@ -360,35 +373,7 @@
         rtn.push([x0, x1])
       }
       return rtn
-    }
-
-
-
-      filterOutMember = ['S','D'] //Filter list for Sweethearts (Sx) and Dogs (Dx)
-
-      setStatus = {"Active":1,"Alumni":0,"Disassociated":2, "Transferred/ Left School":1} //status dictionary
-
-      memberLookup = {}//dictionary mapping roll number to member object
-
-      nodeList = [] //List of nodes (trees)
-
-      memberDict = {} //dictionary mapping littles to bigs by roll number
-
-      colonyMap = {"Colony":0,
-      "Alpha":1,
-      "Beta":2,
-      "Gamma":3,
-      "Delta":4,
-      "Epsilon":5,
-      "Zeta":6,
-      "Eta":7,
-      "Theta":8,
-      "Iota":9,
-      "Kappa":10,
-      "Georgia Tech":0}
-
-      brotherList = [];
-
+    };
 
       /*
       readRoll(STRING)
@@ -401,17 +386,16 @@
 //     with open(Roll, newline='') as csvfile: # open file
 //         reader = csv.reader(csvfile, delimiter='\t') # Split comma seperated values
 //         count = 0 
-//         nodeList = []
 //         for row in reader:
 //             if count != 0: # skip first row for column headers
-//                 if (not row[0][0] in filterOutMember):
-//                      row[2] = setStatus.get(row[2]) #set status of member
+//                 if (not row[0][0] in rollFormat.filterOutMember):
+//                      row[2] = rollFormat.setStatus.get(row[2]) #set status of member
 //                      if(row[15] == "N/A"): # if empty string then no Big present for member
 //                          row[15] = -1;
 //                      n = member(row[5],int(row[15]),row[2],row[7],int(row[0]),row[1]) #create object
 //                      #set dictionary look ups
-//                      memberLookup[int(row[0])] = n
-//                      memberDict[int(row[0])]=int(row[15])
+//                      rollData.memberLookup[int(row[0])] = n
+//                      rollData.memberDict[int(row[0])]=int(row[15])
 //                      n.toString()
 //             count = count + 1 #just to skip first one
 
@@ -421,8 +405,7 @@
     var regex = /^([a-zA-Z0-9\s_\\.\-:])+(.tsv|.txt)$/;
     if (regex.test(fileUpload.value.toLowerCase())) {
         if (typeof (FileReader) != "undefined") {
-            count = 0;
-            nodeList = [];
+            var count = 0;
             var reader = new FileReader();
             reader.onload = function (e) {
                 var table = document.createElement("table");
@@ -436,14 +419,14 @@
                          cell.innerHTML = cells[j];
                       }
 
-                      if(filterOutMember.indexOf(cells[0][0]) == -1){
-                        cells[2] = setStatus[cells[2]];
+                      if(rollFormat.filterOutMember.indexOf(cells[0][0]) == -1){
+                        cells[2] = rollFormat.setStatus[cells[2]];
                         if(cells[15] == "N/A"){
                           cells[15] = -1;
                         }
-                        n = new member(cells[5],parseInt(cells[15]),cells[2],cells[7],parseInt(cells[0]),cells[1]);
-                        memberLookup[parseInt(cells[0])] = n;
-                        memberDict[parseInt(cells[0])] = parseInt(cells[15]);
+                        var n = new member(cells[5],parseInt(cells[15]),cells[2],cells[7],parseInt(cells[0]),cells[1]);
+                        rollData.memberLookup[parseInt(cells[0])] = n;
+                        rollData.memberDict[parseInt(cells[0])] = parseInt(cells[15]);
                         //n.toString();
                       }
 
@@ -451,15 +434,23 @@
                     }
                     count++; 
                 }
-            heads = getHeads();
-            for(var h in heads){//heads.length
-              populateTree(heads[h],[])
-              console.log(heads[h])
-              console.log("Tree "+h+": ",memberLookup[heads[h].data].name)
-              printTree(heads[h])
-              console.log("");
-            }
-            generateTree(heads[6]);
+				
+				var heads = getHeads();
+				// load prompt to choose heads....				
+				alert("we made heads");
+				
+				/* Remove this after unspaghetting */
+				for(var h in heads){//heads.length
+				  populateTree(heads[h],[])
+				  console.log(heads[h])
+				  console.log("Tree "+h+": ",rollData.memberLookup[heads[h].data].name)
+				  printTree(heads[h])
+				  console.log("");
+				}
+				generateTree(heads[6]);
+				/* Remove this after unspaghetting */
+				
+				
             }
             reader.readAsText(fileUpload.files[0]);
             
@@ -473,35 +464,31 @@
 
 
 function generateTree(n){
-  // Generate a random tree.
-    //tree = random_tree(10, 2)
-    //var d1 = document.getElementById('tree_space');
-    //d1.insertAdjacentHTML('beforebegin', '<div style="width:1000px;height:800px">');
-    tree = n
-
+	var tree, e, bb;
+    
+	tree = n;
     // Label it with node offsets and get its extent.
-    e = tree.extent()
+    e = tree.extent();
 
     // Retrieve a bounding box [x,y,width,height] from the extent.
-    bb = bounding_box(e)
+    bb = bounding_box(e);
 
     // Label each node with its (x,y) coordinate placing root at given location.
-    tree.place(-bb[0] + horizontal_gap, -bb[1] + horizontal_gap)
+    tree.place(-bb[0] + horizontal_gap, -bb[1] + horizontal_gap);
 
     // Draw using the labels.
-    tree.draw()
-    //d1.insertAdjacentHTML('beforeend', '</div>');
+    tree.draw();    
 }
 
 function getHeads(){
-    //heads = [brother for brother, big in memberDict.items() if big == -1]
-    heads = [];
-    for(i=0;i<19;i++){
-      if(memberDict[i]==-1){
+    //heads = [brother for brother, big in rollData.memberDict.items() if big == -1]
+    var heads = [];
+    for(var i=0;i<19;i++){
+      if(rollData.memberDict[i]==-1){
         heads.push(i);
       }
     }
-    for(i=0;i<heads.length;i++){
+    for(var i=0;i<heads.length;i++){
         heads[i] = new bro_node(null, [], heads[i])
       }
     return heads
@@ -509,10 +496,10 @@ function getHeads(){
 }
 
 function populateTree(n,children) {
-    //children = [brother for brother, big in memberDict.items() if big == n.data]
+    //children = [brother for brother, big in rollData.memberDict.items() if big == n.data]
     //children = [];
-    for(var bro in memberDict){
-      if(memberDict[bro]==n.data){
+    for(var bro in rollData.memberDict){
+      if(rollData.memberDict[bro]==n.data){
         children.push(bro);
       }
     }
@@ -530,7 +517,7 @@ function populateTree(n,children) {
 }
 
 function printTree(n){
-    console.log(memberLookup[n.data].name + "->")
+    console.log(rollData.memberLookup[n.data].name + "->")
     if (n.child == []){
         return
       }
@@ -541,59 +528,15 @@ function printTree(n){
 
 
 
-    function set_tree(){
-
-      t1 = new Tree("Tyler Pixley",[])
-      t2 = new Tree("Derek Pixley",[])
-      t3 = new Tree("Alex Skinner",[])
-      t4 = new Tree("Michael Lutfring",[])
-      t5 = new Tree("Patrick Furrey",[])
-      t6 = new Tree("Andrew Ward",[])
-      t7 = new Tree("Ariel Tejada",[])
-      t8 = new Tree("Amar Bhatt",[])
-      t9 = new Tree("Asa Snyder",[])
-      t10 = new Tree("Shane Peechtaka",[])
-
-      t7.children.push(t10)
-      t6.children.push(t9)
-      t3.children.push(t5)
-      t3.children.push(t6)
-      t4.children.push(t7)
-      t4.children.push(t8)
-      t2.children.push(t4)
-      t1.children = [t2,t3]
-
-      return t1
-    }
-
-
 
 
   </script>
 </head>
 <body>
+<div id="instruction"></div>
 
-<div id="tree_space" style="width:1000px;height:800px">
-<!--<div style="width:1000px;height:800px">-->
-  <script>
-    // Generate a random tree.
-    //tree = random_tree(10, 2)
-        //tree = set_tree()
+<div id="tree_space" style="width:1000px;height:800px"></div>
 
-    // Label it with node offsets and get its extent.
-        //e = tree.extent()
-
-    // Retrieve a bounding box [x,y,width,height] from the extent.
-        //bb = bounding_box(e)
-
-    // Label each node with its (x,y) coordinate placing root at given location.
-          //tree.place(-bb[0] + horizontal_gap, -bb[1] + horizontal_gap)
-
-    // Draw using the labels.
-          //tree.draw()
-
-  </script>
-</div>
 <input type="file" id="fileUpload" />
 <input type="button" id="upload" value="Upload" onClick="Upload()" />
 <hr />
