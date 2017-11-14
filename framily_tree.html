@@ -1,6 +1,13 @@
 <html>
 <head>
   <style>
+	.treeOption{
+		cursor:pointer;
+		color:blue;
+		text-decoration:underline;
+	}
+  
+  
     .node {
       position: absolute;
       background-color: #0000cc;
@@ -25,6 +32,8 @@
     var node_size = 100
     var horizontal_gap = 16
     var vertical_gap = 32
+	
+	var heads = [];
 
 	var rollFormat = {			
 		filterOutMember: ['S','D'], //Filter list for Sweethearts (Sx) and Dogs (Dx)
@@ -399,6 +408,9 @@
 //                      n.toString()
 //             count = count + 1 #just to skip first one
 
+	function ex(h){
+		generateTree(heads[h]);	
+	}
 
     function Upload() {
     var fileUpload = document.getElementById("fileUpload");
@@ -436,10 +448,23 @@
                 }
 				
 				var heads = getHeads();
-				// load prompt to choose heads....				
-				alert("we made heads");
 				
-				/* Remove this after unspaghetting */
+				// show user options for Trees to display				
+				var headChoices = "<div><h3>Choose a Tree to Generate</h3>";
+				for (var h in heads){
+					console.log(h);
+					populateTree(heads[h],[]);
+					headChoices += "<p class='treeOption' onClick='generateTree(" + h + ")'>" + 
+									"Tree "+h+": " + rollData.memberLookup[heads[h].data].name +
+									"</p>";				
+				}
+				headChoices += "</div>";
+
+				
+				document.getElementById("instruction").innerHTML = headChoices;
+			
+				
+				/* Remove this after unspaghetting 
 				for(var h in heads){//heads.length
 				  populateTree(heads[h],[])
 				  console.log(heads[h])
@@ -448,7 +473,7 @@
 				  console.log("");
 				}
 				generateTree(heads[6]);
-				/* Remove this after unspaghetting */
+				 Remove this after unspaghetting */
 				
 				
             }
@@ -465,8 +490,9 @@
 
 function generateTree(n){
 	var tree, e, bb;
-    
-	tree = n;
+		
+	document.getElementById("tree_space").innerHTML = "";	
+	tree = heads[n];
     // Label it with node offsets and get its extent.
     e = tree.extent();
 
@@ -481,8 +507,7 @@ function generateTree(n){
 }
 
 function getHeads(){
-    //heads = [brother for brother, big in rollData.memberDict.items() if big == -1]
-    var heads = [];
+    //heads = [brother for brother, big in rollData.memberDict.items() if big == -1]    
     for(var i=0;i<19;i++){
       if(rollData.memberDict[i]==-1){
         heads.push(i);
@@ -533,10 +558,10 @@ function printTree(n){
   </script>
 </head>
 <body>
-<div id="instruction"></div>
+
 
 <div id="tree_space" style="width:1000px;height:800px"></div>
-
+<div id="instruction"></div>
 <input type="file" id="fileUpload" />
 <input type="button" id="upload" value="Upload" onClick="Upload()" />
 <hr />
