@@ -9,6 +9,7 @@
   
   
     .node {
+	  white-space: pre;
       position: absolute;
       background-color: #0000cc;
       color: #ffffff;
@@ -29,7 +30,7 @@
   </style>
   <script>
 
-    var node_size = 100
+    var node_size = 150
     var horizontal_gap = 16
     var vertical_gap = 32
 	
@@ -46,25 +47,25 @@
 	};
 	
     // Draw a graph node.
-    function node(lbl, x, y, sz) {
+    function node(targetWindow, bl, x, y, sz) {
       if (!sz) sz = node_size
       var h = sz / 2
-      document.write('<div class="node" style="left:' + (x - h) + 'px;top:' + (y - h) +
+      targetWindow.document.write('<div class="node" style="left:' + (x - h) + 'px;top:' + (y - h) +
           'px;width:' + sz + 'px;height:' + sz + 'px;line-height:' + sz +
           'px;">' + lbl + '</div>')
     }
 
     // Draw a 1-pixel black dot.
-    function dot(x, y) {
+    function dot(targetWindow, x, y) {
 
-      var d1 = document.getElementById('tree_space');
+      var d1 = targetWindow.document.getElementById('tree_space');
       d1.innerHTML += '<div class="dot" style="left:' + x + 'px;top:' + y + 'px;"></div>';
 
       //document.write('<div class="dot" style="left:' + x + 'px;top:' + y + 'px;"></div>')
     }
 
     // Draw a line between two points.  Slow but sure...
-    function arc(x0, y0, x1, y1) {
+    function arc(targetWindow, x0, y0, x1, y1) {
       var dx = x1 - x0
       var dy = y1 - y0
       var x = x0
@@ -72,16 +73,16 @@
       if (abs(dx) > abs(dy)) {
         var yinc = dy / dx
         if (dx < 0)
-          while (x >= x1) { dot(x, y); --x; y -= yinc }
+          while (x >= x1) { dot(targetWindow, x, y); --x; y -= yinc }
         else
-          while (x <= x1) { dot(x, y); ++x; y += yinc }
+          while (x <= x1) { dot(targetWindow, x, y); ++x; y += yinc }
       }
       else {
         var xinc = dx / dy
         if (dy < 0)
-          while (y >= y1) { dot(x, y); --y; x -= xinc }
+          while (y >= y1) { dot(targetWindow, x, y); --y; x -= xinc }
         else
-          while (y <= y1) { dot(x, y); ++y; x += xinc }
+          while (y <= y1) { dot(targetWindow, x, y); ++y; x += xinc }
       }
     }
 
@@ -112,14 +113,14 @@
     }
 
     // Draw the tree after it has been labeled w ith extent() and place().
-    Tree.prototype.draw = function () {
+    Tree.prototype.draw = function (targetWindow) {
       var n_children = this.children.length
       for (var i = 0; i < n_children; i++) {
         var child = this.children[i]
-        arc(this.x, this.y + 0.5 * node_size + 2, child.x, child.y - 0.5 * node_size)
-        child.draw()
+        arc(targetWindow, this.x, this.y + 0.5 * node_size + 2, child.x, child.y - 0.5 * node_size)
+        child.draw(targetWindow)
       }
-      node(this.lbl, this.x, this.y)
+      node(targetWindow, this.lbl, this.x, this.y)
     }
 
     // Recursively assign offsets to subtrees and return an extent
@@ -250,12 +251,15 @@
 	}
 
       // Draw a graph node.
-    function t_node(n, x, y, sz) {
+    function t_node(targetWindow, n, x, y, sz) {
       if (!sz) sz = node_size
       var h = sz / 2
       var bro = rollData.memberLookup[n];
-      var d1 = document.getElementById('tree_space');
-      d1.innerHTML += '<div class="node" style="left:' + (x - h) + 'px;top:' + (y - h) +  'px;width:' + sz + 'px;height:' + sz + 'px;line-height:' + sz + 'px;">' + bro.name + ' ' + bro.roll + '</div>';
+      var d1 = targetWindow.document.getElementById('tree_space');
+      d1.innerHTML += '<div class="node" style="left:' + (x - h) + 'px;top:' + (y - h) +  'px;width:' + sz + 'px;height:' + sz + 'px;line-height:' + sz + 'px;">' +						
+						bro.name + ' ' +
+						bro.roll +
+						'</div>';
       // document.write('<div class="node" style="left:' + (x - h) + 'px;top:' + (y - h) +
       //     'px;width:' + sz + 'px;height:' + sz + 'px;line-height:' + sz +
       //     'px;">' + bro.name + '</div>')
@@ -291,14 +295,14 @@
     }
 
     // Draw the tree after it has been labeled w ith extent() and place().
-    bro_node.prototype.draw = function () {
+    bro_node.prototype.draw = function (targetWindow) {
       var n_children = this.child.length
       for (var i = 0; i < n_children; i++) {
         var child = this.child[i]
-        arc(this.x, this.y + 0.5 * node_size + 2, child.x, child.y - 0.5 * node_size)
-        child.draw()
+        arc(targetWindow, this.x, this.y + 0.5 * node_size + 2, child.x, child.y - 0.5 * node_size)
+        child.draw(targetWindow)
       }
-      t_node(this.data, this.x, this.y)
+      t_node(targetWindow, this.data, this.x, this.y)
     }
 
     // Recursively assign offsets to subtrees and return an extent
@@ -450,15 +454,14 @@
 				var heads = getHeads();
 				
 				// show user options for Trees to display				
-				var headChoices = "<div><h3>Choose a Tree to Generate</h3>";
+				var headChoices = "<h3>Choose a Tree to Generate</h3>";
 				for (var h in heads){
 					console.log(h);
 					populateTree(heads[h],[]);
 					headChoices += "<p class='treeOption' onClick='generateTree(" + h + ")'>" + 
 									"Tree "+h+": " + rollData.memberLookup[heads[h].data].name +
 									"</p>";				
-				}
-				headChoices += "</div>";
+				}				
 
 				
 				document.getElementById("instruction").innerHTML = headChoices;
@@ -502,8 +505,22 @@ function generateTree(n){
     // Label each node with its (x,y) coordinate placing root at given location.
     tree.place(-bb[0] + horizontal_gap, -bb[1] + horizontal_gap);
 
+	
+	var x=window.open();
+	x.document.open();
+	
+	x.document.write('<style>.treeOption{cursor:pointer;color:blue;text-decoration:underline;}.node {white-space: pre;position: absolute;background-color: #0000cc;color: #ffffff;font-size: 12px;font-family: sans-serif;text-align: center;vertical-align: middle;border: 1px solid #000088;}.dot {position: absolute;background-color: black;width: 1px;height: 1px;overflow:hidden;}</style>');
+	
+	x.document.write('<div id="tree_space"></div>');
+	
+	
+	
+	
+	
+	//x.document.write('content');
+	
     // Draw using the labels.
-    tree.draw();    
+    tree.draw(x);    
 }
 
 function getHeads(){
@@ -558,12 +575,11 @@ function printTree(n){
   </script>
 </head>
 <body>
-
-
-<div id="tree_space" style="width:1000px;height:800px"></div>
-<div id="instruction"></div>
+<div id="tree_space" style="left:50%;top:50%"></div>
 <input type="file" id="fileUpload" />
 <input type="button" id="upload" value="Upload" onClick="Upload()" />
+<div id="instruction"></div>
+
 <hr />
 <div id="dvCSV">
 </body>
