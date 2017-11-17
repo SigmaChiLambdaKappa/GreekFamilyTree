@@ -19,6 +19,10 @@
       vertical-align: middle;
       border: 1px solid #000088;
     }
+	
+	.disassociated{
+	  background-color: #a61f34;
+	}
 
     .dot {
       position: absolute;
@@ -256,9 +260,11 @@
       var h = sz / 2
       var bro = rollData.memberLookup[n];
       var d1 = targetWindow.document.getElementById('tree_space');
-      d1.innerHTML += '<div class="node" style="left:' + (x - h) + 'px;top:' + (y - h) +  'px;width:' + sz + 'px;height:' + sz + 'px;line-height:' + sz + 'px;">' +						
+	  var statusText = (bro.status == 2) ? 'disassociated' : '';
+	  
+      d1.innerHTML += '<div class="node ' + statusText + '" style="left:' + (x - h) + 'px;top:' + (y - h) +  'px;width:' + sz + 'px;height:' + sz + 'px;line-height:' + sz + 'px;">' +						
 						bro.name + ' ' +
-						bro.roll +
+						bro.roll + ' ' +
 						'</div>';
       // document.write('<div class="node" style="left:' + (x - h) + 'px;top:' + (y - h) +
       //     'px;width:' + sz + 'px;height:' + sz + 'px;line-height:' + sz +
@@ -509,7 +515,11 @@ function generateTree(n){
 	var x=window.open();
 	x.document.open();
 	
-	x.document.write('<style>.treeOption{cursor:pointer;color:blue;text-decoration:underline;}.node {white-space: pre;position: absolute;background-color: #0000cc;color: #ffffff;font-size: 12px;font-family: sans-serif;text-align: center;vertical-align: middle;border: 1px solid #000088;}.dot {position: absolute;background-color: black;width: 1px;height: 1px;overflow:hidden;}</style>');
+	// Find a way to get style for the tree to the new page without this hacky shit
+	x.document.write('<style>.treeOption{cursor:pointer;color:blue;text-decoration:underline;}' +
+					'.node {white-space: pre;position: absolute;background-color: #0000cc;color: #ffffff;font-size: 12px;font-family: sans-serif;text-align: center;vertical-align: middle;border: 1px solid #000088;}' +
+					'.disassociated{background-color: #a61f34;}' +
+					'.dot {position: absolute;background-color: black;width: 1px;height: 1px;overflow:hidden;}</style>');
 	
 	x.document.write('<div id="tree_space"></div>');
 	
